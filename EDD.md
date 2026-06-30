@@ -6,7 +6,7 @@ This EDD documents the MongoDB data model for the Next.js + MongoDB starter temp
 
 - Client source of truth: `lib/mongodb.ts`
 - Data access source of truth: `db/connection-status.ts`
-- Application name (connection metadata): `devrel.nextjs.starter`
+- Application name (connection metadata): `devrel-github-javascript-nextjs`
 
 This template is intentionally minimal: it ships **without any application-specific
 collections**. The only database interaction is a connectivity health check that runs a
