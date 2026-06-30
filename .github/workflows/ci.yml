@@ -25,7 +25,7 @@ jobs:
           - 27017:27017
 
     env:
-      MONGODB_URI: mongodb://localhost:27017/nextjs_template?appName=nextjs-template-mongodb-ci
+      MONGODB_URI: mongodb://localhost:27017/nextjs_template?appName=devrel-github-javascript-nextjs-ci
 
     steps:
       - name: Checkout
