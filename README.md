@@ -11,7 +11,7 @@ apps backed by MongoDB Atlas, with one-click deployment to Vercel.
 
 ## Features
 
-- **Next.js 15 App Router** with React 19 and server components
+- **Next.js 16 App Router** with React 19 and server components
 - **MongoDB integration** via the official Node.js driver with a shared client singleton
 - **Live connection status** badge on the home page (server-side `ping` health check)
 - **TypeScript** throughout, with strict mode enabled
@@ -23,9 +23,9 @@ apps backed by MongoDB Atlas, with one-click deployment to Vercel.
 
 | Layer | Technology |
 | --- | --- |
-| Framework | Next.js 15 (App Router), React 19 |
+| Framework | Next.js 16 (App Router), React 19 |
 | Language | TypeScript 5 |
-| Database | MongoDB (Node.js driver `mongodb` v6) |
+| Database | MongoDB (Node.js driver `mongodb` v7) |
 | Styling | Tailwind CSS 3, shadcn/ui, lucide-react |
 | Testing | Playwright (end-to-end) |
 | Hosting | Vercel |
