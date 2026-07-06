@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     await setSessionCookie(token);
 
     return NextResponse.json({ success: true, name: user.name });
-  } catch {
+  } catch (error) {
+    console.error("POST /api/auth/login failed:", error);
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
   }
 }

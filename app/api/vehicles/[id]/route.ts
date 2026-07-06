@@ -18,7 +18,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     }
 
     return NextResponse.json({ vehicle: { ...vehicle, _id: vehicle._id.toString() } });
-  } catch {
+  } catch (error) {
+    console.error("GET /api/vehicles/[id] failed:", error);
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
   }
 }

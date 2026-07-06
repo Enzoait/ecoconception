@@ -296,7 +296,8 @@ export async function POST(request: Request) {
     await db.collection("user_collections").createIndex({ userId: 1 }, { unique: true });
 
     return NextResponse.json({ success: true, inserted: result.insertedCount });
-  } catch {
+  } catch (error) {
+    console.error("POST /api/seed failed:", error);
     return NextResponse.json({ error: "Erreur lors de l'initialisation." }, { status: 500 });
   }
 }

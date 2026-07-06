@@ -43,7 +43,8 @@ export async function GET(request: Request) {
       .toArray();
 
     return NextResponse.json({ vehicles: vehicles.map(v => ({ ...v, _id: v._id.toString() })) });
-  } catch {
+  } catch (error) {
+    console.error("GET /api/vehicles failed:", error);
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
   }
 }
