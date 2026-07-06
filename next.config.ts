@@ -1,10 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Pin the Turbopack workspace root to this project to avoid incorrect root
-  // inference when other lockfiles exist higher up the filesystem.
   turbopack: {
     root: import.meta.dirname,
+  },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "media.gqmagazine.fr" },
+      { protocol: "https", hostname: "upload.wikimedia.org" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "cdn.motor1.com" },
+      { protocol: "https", hostname: "images.caradisiac.com" },
+      { protocol: "https", hostname: "www.pushstart.it" },
+      { protocol: "https", hostname: "octane.rent" },
+    ],
   },
 };
 

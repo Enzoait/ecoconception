@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { inter } from "./fonts";
+import { inter, cormorant } from "./fonts";
+import Navbar from "@/components/navbar";
 
 export const metadata: Metadata = {
-  title: "Next.js + MongoDB",
-  description: "Use MongoDB with Next.js",
+  title: "LUXE MOTORS — Véhicules d'Exception",
+  description: "La référence en véhicules hauts de gamme. Découvrez notre collection exclusive de supercars et de gran tourismo.",
 };
 
 export default function RootLayout({
@@ -13,8 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} dark`}>
-      <body>{children}</body>
+    <html lang="fr" className={`${inter.variable} ${cormorant.variable} dark`}>
+      <body className="min-h-screen bg-background text-foreground">
+        <Navbar />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }
