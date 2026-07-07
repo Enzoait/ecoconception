@@ -31,7 +31,10 @@
     "lint": "eslint",
     "test": "playwright test",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:load:aggregate:baseline": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL -e AGGREGATE_ENDPOINT=/api/reports/aggregate/slow k6/aggregate-load-test.js",
+    "test:load:aggregate:optimized": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL k6/aggregate-load-test.js",
+    "test:load:cache": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL k6/cache-state-test.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.2",

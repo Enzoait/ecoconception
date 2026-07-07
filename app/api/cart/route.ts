@@ -3,16 +3,30 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
 
+// Private user data must never be served from a shared cache.
+const PRIVATE_HEADERS = {
+  "Cache-Control": "private, no-store, no-cache, must-revalidate",
+  "Pragma": "no-cache",
+  "Vary": "Cookie",
+};
+
+function privateJson(body: unknown, init?: ResponseInit) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: { ...init?.headers, ...PRIVATE_HEADERS },
+  });
+}
+
 export async function GET() {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
 
   const client = await clientPromise!;
   const db = client!.db("luxe_motors");
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   if (!cart || !cart.items?.length) {
-    return NextResponse.json({ items: [] });
+    return privateJson({ items: [] });
   }
 
   const vehicleIds = cart.items.map((i: { vehicleId: string }) => new ObjectId(i.vehicleId));
@@ -24,23 +38,23 @@ export async function GET() {
     vehicle: vehicleMap[item.vehicleId] || null,
   }));
 
-  return NextResponse.json({ items: populated });
+  return privateJson({ items: populated });
 }
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
 
   const { vehicleId, quantity } = await request.json();
   if (!vehicleId || !quantity || quantity < 1) {
-    return NextResponse.json({ error: "Données invalides." }, { status: 400 });
+    return privateJson({ error: "Données invalides." }, { status: 400 });
   }
 
   const client = await clientPromise!;
   const db = client!.db("luxe_motors");
 
   const vehicle = await db.collection("vehicles").findOne({ _id: new ObjectId(vehicleId) });
-  if (!vehicle) return NextResponse.json({ error: "Véhicule introuvable." }, { status: 404 });
+  if (!vehicle) return privateJson({ error: "Véhicule introuvable." }, { status: 404 });
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   const items: { vehicleId: string; quantity: number }[] = cart?.items ?? [];
@@ -58,23 +72,23 @@ export async function POST(request: Request) {
     { upsert: true }
   );
 
-  return NextResponse.json({ success: true });
+  return privateJson({ success: true });
 }
 
 export async function PUT(request: Request) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
 
   const { vehicleId, quantity } = await request.json();
   if (!vehicleId || quantity == null) {
-    return NextResponse.json({ error: "Données invalides." }, { status: 400 });
+    return privateJson({ error: "Données invalides." }, { status: 400 });
   }
 
   const client = await clientPromise!;
   const db = client!.db("luxe_motors");
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
-  if (!cart) return NextResponse.json({ error: "Panier introuvable." }, { status: 404 });
+  if (!cart) return privateJson({ error: "Panier introuvable." }, { status: 404 });
 
   let items: { vehicleId: string; quantity: number }[] = cart.items ?? [];
 
@@ -90,16 +104,16 @@ export async function PUT(request: Request) {
     { $set: { items, updatedAt: new Date() } }
   );
 
-  return NextResponse.json({ success: true });
+  return privateJson({ success: true });
 }
 
 export async function DELETE(request: Request) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const vehicleId = searchParams.get("vehicleId");
-  if (!vehicleId) return NextResponse.json({ error: "vehicleId requis." }, { status: 400 });
+  if (!vehicleId) return privateJson({ error: "vehicleId requis." }, { status: 400 });
 
   const client = await clientPromise!;
   const db = client!.db("luxe_motors");
@@ -113,5 +127,5 @@ export async function DELETE(request: Request) {
     );
   }
 
-  return NextResponse.json({ success: true });
+  return privateJson({ success: true });
 }

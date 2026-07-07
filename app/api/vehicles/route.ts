@@ -42,7 +42,15 @@ export async function GET(request: Request) {
       .sort({ [sortField]: sortOrder })
       .toArray();
 
-    return NextResponse.json({ vehicles: vehicles.map(v => ({ ...v, _id: v._id.toString() })) });
+    return NextResponse.json(
+      { vehicles: vehicles.map(v => ({ ...v, _id: v._id.toString() })) },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=60, s-maxage=60",
+          "Vary": "Accept-Encoding",
+        },
+      }
+    );
   } catch (error) {
     console.error("GET /api/vehicles failed:", error);
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
