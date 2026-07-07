@@ -4,11 +4,17 @@
 
 Objectif : mesurer et réduire la consommation CPU d'une fonction énergivore dans l'application Next.js, puis comparer les résultats dans **Grafana Cloud (Drilldown > Profiles)**.
 
-| Étape | Route testée | Résultat k6 Cloud |
-|---|---|---|
-| **Avant (baseline)** | `/api/reports/aggregate/slow` | [Run 8053183](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053183) |
-| **Après (optimisé)** | `/api/reports/aggregate` | [Run 8053218](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053218) |
-| **Cache Public / Privé** | `/api/vehicles` + `/api/cart` | [Run cloud 8053247](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053247) + check local réussi |
+| Étape | Route testée | Résultat k6 Cloud | Métriques locales (10 VUs, 30 s) |
+|---|---|---|---|
+| **Avant (baseline)** | `/api/reports/aggregate/slow` | [Run 8053183](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053183) | avg **479 ms**, p(95) **1.92 s**, 207 req |
+| **Après (optimisé)** | `/api/reports/aggregate` | [Run 8053218](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053218) | avg **125 ms**, p(95) **373 ms**, 274 req |
+| **Cache Public / Privé** | `/api/vehicles` + `/api/cart` | [Run cloud 8053247](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053247) + check local réussi | — |
+
+**Gain mesuré localement :**
+
+- Temps moyen : **−74 %** (479 ms → 125 ms)
+- p(95) : **−81 %** (1.92 s → 373 ms)
+- Débit : **+32 %** (207 → 274 requêtes)
 
 ## 1. Fonction énergivore testée
 

@@ -37,6 +37,7 @@
     "test:load:cache": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL k6/cache-state-test.js"
   },
   "dependencies": {
+    "@pyroscope/nodejs": "^0.5.0",
     "@radix-ui/react-slot": "^1.2.2",
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^3.0.3",
