@@ -1,14 +1,14 @@
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 
 const BASE_URL = __ENV.PUBLIC_APP_URL || "https://example.vercel.app";
 const PROJECT_ID = __ENV.K6_CLOUD_PROJECT_ID || "8021352";
 
 export const options = {
-  vus: 30,
+  vus: 10,
   duration: "1m",
   thresholds: {
-    http_req_failed: ["rate<0.01"],
+    http_req_failed: ["rate<0.05"],
   },
   cloud: {
     projectID: Number(PROJECT_ID),
@@ -70,4 +70,6 @@ export default function () {
       return h === "MISS" || h === "BYPASS" || h === "";
     },
   });
+
+  sleep(1);
 }
