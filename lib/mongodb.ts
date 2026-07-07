@@ -30,4 +30,12 @@ if (uri) {
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.
-export default clientPromise; 
+export default clientPromise;
+
+export async function getDb() {
+  if (!clientPromise) {
+    throw new Error("MONGODB_URI is not configured.");
+  }
+  const connectedClient = await clientPromise;
+  return connectedClient.db("luxe_motors");
+}

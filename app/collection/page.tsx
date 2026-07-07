@@ -1,40 +1,16 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { CollectionItemPopulated, Vehicle } from "@/lib/types";
+import { redirect } from "next/navigation";
 import { Library, Calendar } from "lucide-react";
+import { getSession } from "@/lib/auth";
+import { getCollectionWithVehicles } from "@/lib/vehicles-repo";
 
-type PopulatedItem = CollectionItemPopulated & { vehicle: Vehicle & { _id: string } };
+export default async function CollectionPage() {
+  const session = await getSession();
+  if (!session) redirect("/auth/login");
 
-export default function CollectionPage() {
-  const router = useRouter();
-  const [items, setItems] = useState<PopulatedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/collection")
-      .then(r => {
-        if (r.status === 401) { router.push("/auth/login"); return null; }
-        return r.json();
-      })
-      .then(data => {
-        if (data) { setItems(data.items ?? []); }
-        setLoading(false);
-      });
-  }, [router]);
-
+  const items = await getCollectionWithVehicles(session.sub);
   const totalPaid = items.reduce((acc, item) => acc + (item.pricePaid ?? 0), 0);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

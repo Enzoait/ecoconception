@@ -28,15 +28,16 @@ export default function NavbarClient({ session }: Props) {
             </span>
           </div>
           <div className="flex md:hidden items-center gap-3">
-            <Link href="/cart" className="text-muted-foreground hover:text-gold transition-colors">
+            <Link href="/cart" aria-label="Panier" className="text-muted-foreground hover:text-gold transition-colors">
               <ShoppingCart className="h-5 w-5" />
             </Link>
-            <Link href="/collection" className="text-muted-foreground hover:text-gold transition-colors">
+            <Link href="/collection" aria-label="Ma collection" className="text-muted-foreground hover:text-gold transition-colors">
               <Library className="h-5 w-5" />
             </Link>
           </div>
           <button
             onClick={handleLogout}
+            aria-label="Déconnexion"
             className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs tracking-widest uppercase font-light text-muted-foreground hover:border-gold/50 hover:text-gold transition-all"
           >
             <LogOut className="h-3.5 w-3.5" />
@@ -54,6 +55,7 @@ export default function NavbarClient({ session }: Props) {
           </Link>
           <Link
             href="/auth/register"
+            aria-label="Inscription"
             className="flex items-center gap-1.5 rounded border border-gold/50 px-3 py-1.5 text-xs tracking-widest uppercase font-light text-gold hover:bg-gold/10 transition-all"
           >
             <UserPlus className="h-3.5 w-3.5" />

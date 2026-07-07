@@ -1,68 +1,17 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { CartItemPopulated, Vehicle } from "@/lib/types";
-import { Trash2, ShoppingBag, Loader2, CreditCard } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
+import { getSession } from "@/lib/auth";
+import { getCartWithVehicles } from "@/lib/vehicles-repo";
+import CartItemRow from "@/components/cart-item-row";
+import CheckoutPanel from "@/components/checkout-panel";
 
-type PopulatedItem = CartItemPopulated & { vehicle: Vehicle & { _id: string } };
+export default async function CartPage() {
+  const session = await getSession();
+  if (!session) redirect("/auth/login");
 
-export default function CartPage() {
-  const router = useRouter();
-  const [items, setItems] = useState<PopulatedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [checkingOut, setCheckingOut] = useState(false);
-  const [feedback, setFeedback] = useState("");
-
-  async function fetchCart() {
-    const res = await fetch("/api/cart");
-    if (res.status === 401) { router.push("/auth/login"); return; }
-    const data = await res.json();
-    setItems(data.items ?? []);
-    setLoading(false);
-  }
-
-  useEffect(() => { fetchCart(); }, []);
-
-  async function updateQuantity(vehicleId: string, quantity: number) {
-    await fetch("/api/cart", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vehicleId, quantity }),
-    });
-    fetchCart();
-  }
-
-  async function removeItem(vehicleId: string) {
-    await fetch(`/api/cart?vehicleId=${vehicleId}`, { method: "DELETE" });
-    fetchCart();
-  }
-
-  async function handleCheckout() {
-    setCheckingOut(true);
-    setFeedback("");
-    const res = await fetch("/api/cart/checkout", { method: "POST" });
-    if (res.ok) {
-      setFeedback("Paiement validé ! Véhicules ajoutés à votre collection.");
-      setTimeout(() => router.push("/collection"), 1800);
-    } else {
-      const data = await res.json();
-      setFeedback(data.error || "Erreur lors du paiement.");
-      setCheckingOut(false);
-    }
-  }
-
+  const items = await getCartWithVehicles(session.sub);
   const total = items.reduce((acc, item) => acc + (item.vehicle?.price ?? 0) * item.quantity, 0);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -83,83 +32,13 @@ export default function CartPage() {
       ) : (
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-4">
-            {items.map(item => {
-              const v = item.vehicle;
-              if (!v) return null;
-              const imageSrc = v.images?.[0] ?? `https://picsum.photos/seed/${v.brand}-${v.model}/400/225`;
-              return (
-                <div key={item.vehicleId} className="flex gap-4 rounded-lg border border-border bg-card p-4">
-                  <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded">
-                    <Image src={imageSrc} alt={`${v.brand} ${v.model}`} fill className="object-cover" sizes="128px" />
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-[10px] font-light tracking-widest uppercase text-muted-foreground">{v.brand}</p>
-                        <p className="font-serif text-lg font-light">{v.model}</p>
-                      </div>
-                      <button
-                        onClick={() => removeItem(item.vehicleId)}
-                        className="text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center rounded border border-border">
-                        <button onClick={() => updateQuantity(item.vehicleId, item.quantity - 1)} className="px-2.5 py-1 text-muted-foreground hover:text-foreground transition-colors text-sm">−</button>
-                        <span className="min-w-[2rem] text-center text-sm font-light">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.vehicleId, item.quantity + 1)} className="px-2.5 py-1 text-muted-foreground hover:text-foreground transition-colors text-sm">+</button>
-                      </div>
-                      <p className="font-serif text-lg font-light text-gold">
-                        {(v.price * item.quantity).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {items.map(item => item.vehicle && (
+              <CartItemRow key={item.vehicleId} item={{ ...item, vehicle: item.vehicle }} />
+            ))}
           </div>
 
           <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-lg border border-border bg-card p-6">
-              <h2 className="font-serif text-xl font-light mb-6">Récapitulatif</h2>
-              <div className="space-y-3 mb-6">
-                {items.map(item => item.vehicle && (
-                  <div key={item.vehicleId} className="flex justify-between text-sm font-light">
-                    <span className="text-muted-foreground">{item.vehicle.brand} {item.vehicle.model} ×{item.quantity}</span>
-                    <span>{(item.vehicle.price * item.quantity).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border pt-4 mb-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-light tracking-widest uppercase text-muted-foreground">Total</span>
-                  <span className="font-serif text-2xl font-light text-gold">
-                    {total.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-              </div>
-
-              {feedback && (
-                <p className={`mb-4 rounded border px-3 py-2 text-sm font-light ${
-                  feedback.includes("validé")
-                    ? "border-gold/30 bg-gold/10 text-gold"
-                    : "border-destructive/30 bg-destructive/10 text-destructive"
-                }`}>
-                  {feedback}
-                </p>
-              )}
-
-              <button
-                onClick={handleCheckout}
-                disabled={checkingOut}
-                className="flex w-full items-center justify-center gap-2 rounded bg-gold px-4 py-3 text-sm font-light tracking-widest uppercase text-black transition-colors hover:bg-gold-light disabled:opacity-60"
-              >
-                {checkingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                Valider & Payer
-              </button>
-            </div>
+            <CheckoutPanel items={items.filter(i => i.vehicle).map(i => ({ ...i, vehicle: i.vehicle! }))} total={total} />
           </div>
         </div>
       )}

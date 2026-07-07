@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import type { Vehicle } from "@/lib/types";
 
 interface Props {
@@ -32,9 +33,12 @@ export default function VehicleCard({ vehicle }: Props) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-3 left-3">
-            <span className={`inline-block rounded border px-2 py-0.5 text-[10px] font-light tracking-widest uppercase ${categoryClass}`}>
+            <Badge
+              variant="outline"
+              className={`rounded border px-2 py-0.5 text-[10px] font-light tracking-widest uppercase ${categoryClass}`}
+            >
               {vehicle.category}
-            </span>
+            </Badge>
           </div>
         </div>
 

@@ -1,30 +1,15 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
+import { getDb } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
+import { getCartWithVehicles } from "@/lib/vehicles-repo";
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
-  const client = await clientPromise!;
-  const db = client!.db("luxe_motors");
-
-  const cart = await db.collection("carts").findOne({ userId: session.sub });
-  if (!cart || !cart.items?.length) {
-    return NextResponse.json({ items: [] });
-  }
-
-  const vehicleIds = cart.items.map((i: { vehicleId: string }) => new ObjectId(i.vehicleId));
-  const vehicles = await db.collection("vehicles").find({ _id: { $in: vehicleIds } }).toArray();
-  const vehicleMap = Object.fromEntries(vehicles.map(v => [v._id.toString(), { ...v, _id: v._id.toString() }]));
-
-  const populated = cart.items.map((item: { vehicleId: string; quantity: number }) => ({
-    ...item,
-    vehicle: vehicleMap[item.vehicleId] || null,
-  }));
-
-  return NextResponse.json({ items: populated });
+  const items = await getCartWithVehicles(session.sub);
+  return NextResponse.json({ items });
 }
 
 export async function POST(request: Request) {
@@ -36,8 +21,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Données invalides." }, { status: 400 });
   }
 
-  const client = await clientPromise!;
-  const db = client!.db("luxe_motors");
+  const db = await getDb();
 
   const vehicle = await db.collection("vehicles").findOne({ _id: new ObjectId(vehicleId) });
   if (!vehicle) return NextResponse.json({ error: "Véhicule introuvable." }, { status: 404 });
@@ -70,8 +54,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Données invalides." }, { status: 400 });
   }
 
-  const client = await clientPromise!;
-  const db = client!.db("luxe_motors");
+  const db = await getDb();
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   if (!cart) return NextResponse.json({ error: "Panier introuvable." }, { status: 404 });
@@ -101,8 +84,7 @@ export async function DELETE(request: Request) {
   const vehicleId = searchParams.get("vehicleId");
   if (!vehicleId) return NextResponse.json({ error: "vehicleId requis." }, { status: 400 });
 
-  const client = await clientPromise!;
-  const db = client!.db("luxe_motors");
+  const db = await getDb();
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   if (cart) {

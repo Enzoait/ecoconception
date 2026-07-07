@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
+import { getDb } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
 
 export async function POST() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
-  const client = await clientPromise!;
-  const db = client!.db("luxe_motors");
+  const db = await getDb();
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   if (!cart || !cart.items?.length) {
