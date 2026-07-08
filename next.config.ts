@@ -1,7 +1,3 @@
-import { initPyroscope } from "./lib/pyroscope";
-
-initPyroscope();
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
