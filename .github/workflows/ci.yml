@@ -60,3 +60,63 @@ jobs:
           path: playwright-report/
           retention-days: 7
           if-no-files-found: ignore
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    # Rapport de non-régression Web Vitals / écoconception, informatif uniquement :
+    # ne doit jamais bloquer un merge (seuils non calibrés sur un historique de mesures réelles).
+    continue-on-error: true
+
+    services:
+      mongodb:
+        image: mongo:latest
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/nextjs_template?appName=devrel-github-javascript-nextjs-ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start server
+        run: npm run start &
+
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/ -o /dev/null && exit 0
+            sleep 2
+          done
+          echo "Server did not become ready in time" >&2
+          exit 1
+
+      - name: Run Lighthouse CI
+        run: npm run lhci
+
+      - name: Upload Lighthouse report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import clientPromise from "@/lib/mongodb";
+import { getDb } from "@/lib/mongodb";
 import { signToken, setSessionCookie } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -14,8 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le mot de passe doit contenir au moins 6 caractères." }, { status: 400 });
     }
 
-    const client = await clientPromise!;
-    const db = client!.db("luxe_motors");
+    const db = await getDb();
 
     const existing = await db.collection("users").findOne({ email: email.toLowerCase() });
     if (existing) {

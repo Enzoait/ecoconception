@@ -32,6 +32,7 @@
     "test": "playwright test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "lhci": "lhci autorun",
     "test:load:aggregate:baseline": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL -e AGGREGATE_ENDPOINT=/api/reports/aggregate/slow k6/aggregate-load-test.js",
     "test:load:aggregate:optimized": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL k6/aggregate-load-test.js",
     "test:load:cache": "k6 cloud run -e PUBLIC_APP_URL=$PUBLIC_APP_URL k6/cache-state-test.js"
@@ -59,6 +60,7 @@
     "@datadog/pprof": "5.14.4"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.49.1",
     "@types/node": "^20",
     "@types/react": "^19.2.17",

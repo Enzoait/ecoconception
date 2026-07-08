@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getDb } from "@/lib/mongodb";
 
 const VEHICLES = [
   {
@@ -269,12 +269,15 @@ const VEHICLES = [
 ];
 
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_SEED !== "true") {
+    return NextResponse.json({ error: "Route désactivée en production." }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const reset = searchParams.get("reset") === "true";
 
-    const client = await clientPromise!;
-    const db = client!.db("luxe_motors");
+    const db = await getDb();
 
     if (reset) {
       await db.collection("vehicles").deleteMany({});
