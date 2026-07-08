@@ -2,7 +2,7 @@ import Pyroscope from "@pyroscope/nodejs";
 
 export function initPyroscope() {
   if (process.env.PYROSCOPE_ENABLED !== "true") return;
-  if (typeof window !== "undefined") return; // server only
+  if (typeof window !== "undefined") return; // client-side build, do nothing
 
   const serverAddress = process.env.PYROSCOPE_SERVER_URL;
   const password = process.env.PYROSCOPE_API_TOKEN;
