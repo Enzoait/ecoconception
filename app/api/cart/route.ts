@@ -6,7 +6,7 @@ import { getCartWithVehicles } from "@/lib/vehicles-repo";
 
 export async function GET() {
   const session = await getSession();
-  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
   const items = await getCartWithVehicles(session.sub);
   return NextResponse.json({ items });
@@ -14,17 +14,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
   const { vehicleId, quantity } = await request.json();
   if (!vehicleId || !quantity || quantity < 1) {
-    return privateJson({ error: "Données invalides." }, { status: 400 });
+    return NextResponse.json({ error: "Données invalides." }, { status: 400 });
   }
 
   const db = await getDb();
 
   const vehicle = await db.collection("vehicles").findOne({ _id: new ObjectId(vehicleId) });
-  if (!vehicle) return privateJson({ error: "Véhicule introuvable." }, { status: 404 });
+  if (!vehicle) return NextResponse.json({ error: "Véhicule introuvable." }, { status: 404 });
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   const items: { vehicleId: string; quantity: number }[] = cart?.items ?? [];
@@ -42,22 +42,22 @@ export async function POST(request: Request) {
     { upsert: true }
   );
 
-  return privateJson({ success: true });
+  return NextResponse.json({ success: true });
 }
 
 export async function PUT(request: Request) {
   const session = await getSession();
-  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
   const { vehicleId, quantity } = await request.json();
   if (!vehicleId || quantity == null) {
-    return privateJson({ error: "Données invalides." }, { status: 400 });
+    return NextResponse.json({ error: "Données invalides." }, { status: 400 });
   }
 
   const db = await getDb();
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
-  if (!cart) return privateJson({ error: "Panier introuvable." }, { status: 404 });
+  if (!cart) return NextResponse.json({ error: "Panier introuvable." }, { status: 404 });
 
   let items: { vehicleId: string; quantity: number }[] = cart.items ?? [];
 
@@ -73,16 +73,16 @@ export async function PUT(request: Request) {
     { $set: { items, updatedAt: new Date() } }
   );
 
-  return privateJson({ success: true });
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(request: Request) {
   const session = await getSession();
-  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const vehicleId = searchParams.get("vehicleId");
-  if (!vehicleId) return privateJson({ error: "vehicleId requis." }, { status: 400 });
+  if (!vehicleId) return NextResponse.json({ error: "vehicleId requis." }, { status: 400 });
 
   const db = await getDb();
 
@@ -95,5 +95,5 @@ export async function DELETE(request: Request) {
     );
   }
 
-  return privateJson({ success: true });
+  return NextResponse.json({ success: true });
 }
