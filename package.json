@@ -55,6 +55,9 @@
   "engines": {
     "node": "20.x"
   },
+  "overrides": {
+    "@datadog/pprof": "5.14.4"
+  },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/node": "^20",
