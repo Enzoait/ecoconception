@@ -5,22 +5,28 @@ export function initPyroscope() {
   if (typeof window !== "undefined") return; // client-side build, do nothing
 
   const serverAddress = process.env.PYROSCOPE_SERVER_URL;
-  const password = process.env.PYROSCOPE_API_TOKEN;
-  if (!serverAddress || !password) {
-    console.warn("[pyroscope] missing PYROSCOPE_SERVER_URL or PYROSCOPE_API_TOKEN");
+  if (!serverAddress) {
+    console.warn("[pyroscope] missing PYROSCOPE_SERVER_URL");
     return;
   }
 
   try {
-    Pyroscope.init({
+    const config: Record<string, unknown> = {
       appName: process.env.PYROSCOPE_APP_NAME || "ecoconception-rust",
       serverAddress,
-      basicAuthUser: process.env.PYROSCOPE_USER || "1714687",
-      basicAuthPassword: password,
       wall: {
         collectCpuTime: true,
       },
-    });
+    };
+
+    const user = process.env.PYROSCOPE_USER;
+    const password = process.env.PYROSCOPE_API_TOKEN;
+    if (user && password) {
+      config.basicAuthUser = user;
+      config.basicAuthPassword = password;
+    }
+
+    Pyroscope.init(config);
 
     Pyroscope.start();
     console.log("[pyroscope] profiling started");

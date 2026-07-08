@@ -4,9 +4,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: import.meta.dirname,
   },
-  experimental: {
-    serverComponentsExternalPackages: ["@pyroscope/nodejs", "@datadog/pprof"],
-  },
+  serverExternalPackages: ["@pyroscope/nodejs", "@datadog/pprof"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
