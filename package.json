@@ -54,7 +54,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "overrides": {
     "@datadog/pprof": "5.14.4"
