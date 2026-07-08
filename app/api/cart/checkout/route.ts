@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
+import { privateJson } from "@/lib/http";
 
 export async function POST() {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!session) return privateJson({ error: "Non autorisé." }, { status: 401 });
 
   const db = await getDb();
 
   const cart = await db.collection("carts").findOne({ userId: session.sub });
   if (!cart || !cart.items?.length) {
-    return NextResponse.json({ error: "Panier vide." }, { status: 400 });
+    return privateJson({ error: "Panier vide." }, { status: 400 });
   }
 
   const vehicleIds = cart.items.map((i: { vehicleId: string }) => new ObjectId(i.vehicleId));
@@ -48,5 +48,5 @@ export async function POST() {
     { $set: { items: [], updatedAt: new Date() } }
   );
 
-  return NextResponse.json({ success: true, purchased: newItems.length });
+  return privateJson({ success: true, purchased: newItems.length });
 }
