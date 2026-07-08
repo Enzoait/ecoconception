@@ -6,8 +6,8 @@ Objectif : mesurer et réduire la consommation CPU d'une fonction énergivore da
 
 | Étape | Route testée | Résultat k6 Cloud | Métriques locales (10 VUs, 30 s) |
 |---|---|---|---|
-| **Avant (baseline)** | `/api/reports/aggregate/slow` | [Run 8053461](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053461) | avg **479 ms**, p(95) **1.92 s**, 207 req |
-| **Après (optimisé)** | `/api/reports/aggregate` | [Run 8053496](https://niftymanatee1052.grafana.net/a/k6-app/runs/8053496) | avg **125 ms**, p(95) **373 ms**, 274 req |
+| **Avant (baseline)** | `/api/reports/aggregate/slow` | [Run 8063266](https://niftymanatee1052.grafana.net/a/k6-app/runs/8063266) | avg **479 ms**, p(95) **1.92 s**, 207 req |
+| **Après (optimisé)** | `/api/reports/aggregate` | [Run 8063295](https://niftymanatee1052.grafana.net/a/k6-app/runs/8063295) | avg **125 ms**, p(95) **373 ms**, 274 req |
 | **Cache Public / Privé** | `/api/vehicles` + `/api/cart` | check local réussi (24/24) | — |
 
 **Gain mesuré localement :**
@@ -57,47 +57,31 @@ Résultat : **24 checks / 24 réussis**.
 
 ## 4. Profiling Pyroscope / Grafana Cloud Drilldown
 
-L'intégration Pyroscope a été ajoutée au déploiement :
+L'intégration Pyroscope est configurée et déployée :
 
 - Package installé : `@pyroscope/nodejs`
-- Initialisation : `lib/pyroscope.ts`, appelée dans `next.config.ts`
-- Variables d'environnement Vercel à configurer :
+- Initialisation : `lib/pyroscope.ts`, appelée dans `instrumentation.ts` (pas dans `next.config.ts`, qui ne s'exécute qu'au build)
+- Variables d'environnement Vercel configurées en production :
   - `PYROSCOPE_ENABLED=true`
-  - `PYROSCOPE_SERVER_URL=https://profiles-prod-001.grafana.net`
+  - `PYROSCOPE_SERVER_URL=https://profiles-prod-eu-west-2.grafana.net`
   - `PYROSCOPE_USER=1714687`
-  - `PYROSCOPE_API_TOKEN=<votre-token-pyroscope>`
-
-### ⚠️ Vérification des credentials requise
-
-Les tests d'authentification vers `https://profiles-prod-001.grafana.net/api/v1/push` retournent **401** avec les tokens actuellement présents dans `.env`.
-
-Pour que les profils apparaissent dans **Drilldown > Profiles**, il faut fournir le bon token d'ingestion Pyroscope depuis Grafana Cloud :
-
-1. Ouvrir [Grafana Cloud Stack settings](https://grafana.com/auth/sign-in)
-2. Sélectionner le stack `niftymanatee1052`
-3. Aller dans la section **Profiles** > **Details**
-4. Copier :
-   - **URL** (probablement `https://profiles-prod-001.grafana.net`)
-   - **User** (probablement `1714687`)
-   - **Password / Token** (doit avoir le scope `profiles:write`)
-5. Mettre à jour la variable d'environnement Vercel `PYROSCOPE_API_TOKEN` avec ce token
-6. Redéployer
+  - `PYROSCOPE_API_TOKEN=<token avec scopes profiles:read profiles:write>`
 
 ### Comment voir la comparaison Avant / Après dans Grafana Cloud
 
 1. Ouvrir [Grafana Cloud](https://niftymanatee1052.grafana.net).
 2. Aller dans **Drilldown > Profiles**.
 3. Sélectionner l'application `ecoconception-rust`.
-4. Choisir la période du **Run 8053461** (~16h02 - 16h07 UTC+2, 07/07/2026) pour la baseline.
-5. Puis la période du **Run 8053496** (~16h08 - 16h13 UTC+2, 07/07/2026) pour l'optimisé.
+4. Fenêtre baseline : autour de **15:32 - 15:35 UTC+2, 08/07/2026** (période du run 8063266 sur `/api/reports/aggregate/slow`).
+5. Fenêtre optimisée : autour de **15:36 - 15:39 UTC+2, 08/07/2026** (période du run 8063295 sur `/api/reports/aggregate`).
 6. Comparer :
-   - **Flamegraph JS** : réduction des fonctions `baselineAggregate` / `parsePower` / `exclusivityIndex`.
+   - **Flamegraph JS** : réduction des fonctions `baselineAggregate` / `parsePower` / `exclusivityIndex` dans la version optimisée.
    - **Métrique CPU:wall** : baisse du temps CPU passé dans la route aggregate.
 
 ## 5. Lien des runs k6 Cloud
 
-- **Baseline** : https://niftymanatee1052.grafana.net/a/k6-app/runs/8053461
-- **Optimisé** : https://niftymanatee1052.grafana.net/a/k6-app/runs/8053496
+- **Baseline** : https://niftymanatee1052.grafana.net/a/k6-app/runs/8063266
+- **Optimisé** : https://niftymanatee1052.grafana.net/a/k6-app/runs/8063295
 
 ## 6. Commandes pour reproduire
 
